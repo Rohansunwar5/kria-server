@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet" />
+  <style type="text/css">
+    @media screen {
+      @font-face {
+        font-family: "Lato";
+        font-style: normal;
+        font-weight: 400;
+        src: local("Lato Regular"), local("Lato-Regular"),
+          url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format("woff");
+      }
+    }
+
+    /* CLIENT-SPECIFIC STYLES */
+    body,
+    table,
+    td,
+    a {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      -ms-interpolation-mode: bicubic;
+    }
+
+    /* RESET STYLES */
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+
+    table {
+      border-collapse: collapse !important;
+    }
+
+    body {
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* iOS BLUE LINKS */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+
+    /* MOBILE STYLES */
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 26px !important;
+        line-height: 40px !important;
+        padding-top: 10px !important;
+        letter-spacing: 2px !important;
+      }
+    }
+
+    /* ANDROID CENTER FIX */
+    div[style*="margin: 16px 0;"] {
+      margin: 0 !important;
+    }
+  </style>
+</head>
+
+<body style="
+      background-color: #f4f4f4;
+      margin: 0 !important;
+      padding: 0 !important;
+    ">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td bgcolor="#F06856" align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px">
+          <tr>
+            <td align="center" valign="top" style="padding: 23px 0px"></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td bgcolor="#F06856" align="center" style="padding: 0px 10px 0px 10px">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px">
+          <tr>
+            <td bgcolor="#ffffff" align="center" valign="top" style="
+                  padding: 15px 20px 20px 20px;
+                  border-radius: 4px 4px 0px 0px;
+                  color: #111111;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 48px;
+                  font-weight: 400;
+                  letter-spacing: 4px;
+                  line-height: 48px;
+                ">
+              <h1 style="
+                    font-size: 28px;
+                    font-weight: 400;
+                    margin: 0px;
+                    margin-top: 20px;
+                  ">
+                <a href="https://workplay.digital/" rel="noopener" target="_blank">
+                  <img style="height: 24px" src="https://cdn.workplay.digital/assets/workplay-logo.png"
+                    alt="workplay" /></a>
+              </h1>
+              <img src="https://cdn-dev.workplay.digital/assets/wave-people.png" width="255" height="260"
+                style="display: block; border: 0px" />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td bgcolor="#f4f4f4" align="center" style="padding: 0px 10px 0px 10px">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px">
+          <tr>
+            <td bgcolor="#ffffff" align="left" style="
+                  color: #000000;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 15px;
+                  font-weight: 400;
+                  line-height: 25px;
+                  text-align: left;
+                ">
+              <p style="margin: 10px 40px; font-size: 16px; font-weight: 500">
+                Hey <%= firstName %>,
+              </p>
+              <p style="margin: 0px 40px">
+                Thank you for exploring the customizable features of our Quiz
+                Game! We're excited to see you dive into the possibilities of
+                tailoring your own gaming experience.
+              </p>
+              <p style="margin: 10px 40px">
+                Here is your generated campaign link for Quiz Game:
+                <a style="color: #cf4432" target="_blank" rel="noopener"
+                  href="https://custom-quiz.workplay.digital/play?campaignId=<%= quizId %>">https://custom-quiz.workplay.digital/play?campaignId=
+                  <%= quizId %>
+                </a>
+                .Please note that this
+                link will only be
+                accessible for the next 24 hours. To continue your adventure without any interruptions, please reach out
+                to us soon!
+              </p>
+              <p style="margin: 10px 40px">
+                Additionally, we have another fantastic customizable game
+                waiting for you! Check out the customizable features of Our
+                <a style="color: #cf4432" target="_blank" rel="noopener"
+                  href="https://custom-spin.workplay.digital/">Spin the Wheel Game</a>
+                for another level of interactive fun, or
+                <a style="color: #cf4432" target="_blank" rel="noopener" href="https://workplay.digital/">visit our
+                  website</a>
+                to discover more options.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td bgcolor="#ffffff" align="left" style="
+                  color: #000;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 15px;
+                  font-weight: 400;
+                  line-height: 25px;
+                ">
+              <div style="margin: 0px 40px">
+                <p>
+                  For any assistance or to extend your access to generated
+                  game link, feel free to contact us at:
+                </p>
+              </div>
+              <ul style="margin: 0px 20px">
+                <li style="font-weight: 500">Email: info@workplay.digital</li>
+                <li style="font-weight: 500">Phone: +91 97428 47450</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td bgcolor="#ffffff" align="left" style="
+                  padding: 0px 30px 20px 30px;
+                  color: #000000;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 18px;
+                  font-weight: 400;
+                  line-height: 25px;
+                ">
+              <p style="margin: 0"></p>
+            </td>
+          </tr>
+          <tr>
+            <td bgcolor="#ffffff" align="left" style="
+                  padding: 0px 30px 20px 30px;
+                  color: #000000;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 15px;
+                  font-weight: 400;
+                  line-height: 28px;
+                ">
+              <p style="margin: 2px 10px">
+                Don’t miss out on the fun—get in touch with us to keep your
+                game going!
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td bgcolor="#ffffff" align="left" style="
+                  padding: 0px 30px 40px 30px;
+                  border-radius: 0px 0px 4px 4px;
+                  color: #000000;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 15px;
+                  font-weight: 400;
+                  line-height: 25px;
+                ">
+              <p style="margin: 0px 10px">Best Regards,</p>
+              <p style="
+                    margin: 5px 10px;
+                    font-weight: 500;
+                    font-size: 16px;
+                    font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  ">
+                The WorkPlay Team
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td bgcolor="#f4f4f4" align="center" style="padding: 30px 10px 0px 10px">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px">
+          <tr>
+            <td bgcolor="#ffe2de" align="center" style="
+                  padding: 30px 30px 10px 30px;
+                  border-radius: 4px 4px 4px 4px;
+                  color: #666666;
+                  font-size: 14px;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-weight: 500;
+                  line-height: 25px;
+                ">
+              <a rel="noopener" href="https://www.linkedin.com/company/workplaystudio/" target="_blank">
+                <img style="height: 30px; margin-right: 10px" src="https://cdn.workplay.digital/assets/linkedin.png"
+                  alt="LinkedIn" /></a>
+              <a href="https://www.facebook.com/people/WorkPlay-Studio/100075423147764/" target="_blank" rel="noopener">
+                <img style="height: 30px; margin-right: 10px" src="https://cdn.workplay.digital/assets/facebook.png"
+                  alt="facebook" /></a>
+              <a href="https://www.instagram.com/workplaystudio/" target="_blank" rel="noopener">
+                <img style="height: 30px" src="https://cdn.workplay.digital/assets/instagram.png" alt="instagram" /></a>
+              <p style="margin: 20px 0px">
+                No.13-14, 2nd floor, Kothnur Main Rd, RBI Layout, JP Nagar 7th
+                Phase, Bengaluru, Karnataka 560078
+              </p>
+              <p style="color: #000000">
+                © 2024 WorkPlay Studio Pvt Ltd. All Rights Reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td bgcolor="#f4f4f4" align="center" style="padding: 0px 10px 0px 10px">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px">
+          <tr>
+            <td bgcolor="#f4f4f4" align="left" style="
+                  padding: 0px 30px 30px 30px;
+                  color: #666666;
+                  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+                  font-size: 14px;
+                  font-weight: 400;
+                  line-height: 18px;
+                ">
+              <br />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>

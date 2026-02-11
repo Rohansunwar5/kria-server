@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Lead</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    li strong {
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>New Lead</h1>
+    <p>A new lead has been generated. Below are the contact details:</p>
+    <ul>
+      <li><strong>Name:</strong>
+        <%= firstName %>
+          <%= lastName %>
+      </li>
+      <li><strong>Email:</strong>
+        <%= email %>
+      </li>
+      <li><strong>Contact No:</strong>
+        <%= isdCode %>
+          <%= phoneNumber %>
+      </li>
+      <li><strong>GameType:</strong>
+        <%= gameType %>
+      </li>
+      <li><strong>Game Link:</strong>
+        <%= gameLink %>
+      </li>
+    </ul>
+  </div>
+</body>
+
+</html>
