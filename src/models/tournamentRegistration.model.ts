@@ -25,10 +25,6 @@ export enum IPlayerGender {
     FEMALE = 'female'
 }
 
-// ============================================================================
-// SCHEMA
-// ============================================================================
-
 const tournamentRegistrationSchema = new mongoose.Schema(
     {
         playerId: {
@@ -120,18 +116,10 @@ const tournamentRegistrationSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// ============================================================================
-// INDEXES
-// ============================================================================
-
 tournamentRegistrationSchema.index({ tournamentId: 1, categoryId: 1, status: 1 });
 tournamentRegistrationSchema.index({ playerId: 1 });
 tournamentRegistrationSchema.index({ teamId: 1 });
 tournamentRegistrationSchema.index({ playerId: 1, tournamentId: 1, categoryId: 1 }, { unique: true });
-
-// ============================================================================
-// INTERFACE
-// ============================================================================
 
 export interface ITournamentRegistration extends mongoose.Document {
     _id: string;

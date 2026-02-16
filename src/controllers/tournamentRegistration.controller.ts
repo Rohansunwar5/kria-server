@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { tournamentRegistrationService } from '../services/tournamentRegistration.service';
 
-// ============================================================================
-// PLAYER ACTIONS
-// ============================================================================
-
 export const registerForTournament = async (req: Request, res: Response, next: NextFunction) => {
     const playerId = req.player._id;
     const response = await tournamentRegistrationService.register(playerId, req.body);
@@ -23,10 +19,6 @@ export const withdrawRegistration = async (req: Request, res: Response, next: Ne
     const response = await tournamentRegistrationService.withdraw(id, playerId);
     next(response);
 };
-
-// ============================================================================
-// ORGANIZER/STAFF ACTIONS
-// ============================================================================
 
 export const getRegistrationsByTournament = async (req: Request, res: Response, next: NextFunction) => {
     const { tournamentId } = req.params;
@@ -66,10 +58,6 @@ export const bulkApproveRegistrations = async (req: Request, res: Response, next
     const response = await tournamentRegistrationService.bulkApprove(registrationIds, userId);
     next(response);
 };
-
-// ============================================================================
-// TEAM ASSIGNMENT
-// ============================================================================
 
 export const assignPlayerToTeam = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
