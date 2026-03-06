@@ -8,9 +8,12 @@ export const registerValidator = [
     body('categoryId')
         .notEmpty().withMessage('Category ID is required.')
         .isMongoId().withMessage('Invalid category ID.'),
-    body('profile.name')
+    body('profile.firstName')
         .trim()
-        .notEmpty().withMessage('Name is required.'),
+        .notEmpty().withMessage('First name is required.'),
+    body('profile.lastName')
+        .trim()
+        .notEmpty().withMessage('Last name is required.'),
     body('profile.age')
         .notEmpty().withMessage('Age is required.')
         .isInt({ min: 1, max: 100 }).withMessage('Age must be between 1 and 100.'),

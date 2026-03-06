@@ -1,9 +1,5 @@
 import mongoose from 'mongoose';
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
 export enum ISport {
     BADMINTON = 'badminton',
     CRICKET = 'cricket',
@@ -27,10 +23,6 @@ export enum IAuctionType {
     MANUAL = 'manual',
     LIVE = 'live'
 }
-
-// ============================================================================
-// SCHEMA
-// ============================================================================
 
 const tournamentSchema = new mongoose.Schema(
     {
@@ -128,18 +120,10 @@ const tournamentSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// ============================================================================
-// INDEXES
-// ============================================================================
-
 tournamentSchema.index({ status: 1, startDate: 1 });
 tournamentSchema.index({ createdBy: 1 });
 tournamentSchema.index({ 'venue.city': 1 });
 tournamentSchema.index({ sport: 1, status: 1 });
-
-// ============================================================================
-// INTERFACE
-// ============================================================================
 
 export interface ITournament extends mongoose.Document {
     _id: string;

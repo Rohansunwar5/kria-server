@@ -20,6 +20,7 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
 export const setPassword = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const response = await playerAuthService.setPassword({ email, password });
+
     next(response);
 };
 

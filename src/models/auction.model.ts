@@ -8,6 +8,7 @@ export enum IAuctionStatus {
     NOT_STARTED = 'not_started',
     IN_PROGRESS = 'in_progress',
     PAUSED = 'paused',
+    SOLD = 'sold',
     COMPLETED = 'completed'
 }
 
@@ -22,8 +23,8 @@ export enum IAuctionLogType {
 
 const auctionLogSchema = new mongoose.Schema(
     {
-        playerId: {
-            type: mongoose.Types.ObjectId,
+        registrationId: {
+            type: String,
             required: true,
         },
         playerName: {
@@ -31,7 +32,7 @@ const auctionLogSchema = new mongoose.Schema(
             required: true,
         },
         teamId: {
-            type: mongoose.Types.ObjectId,
+            type: String,
             required: true,
         },
         teamName: {
@@ -49,7 +50,7 @@ const auctionLogSchema = new mongoose.Schema(
             enum: IAuctionLogType,
         },
         recordedBy: {
-            type: mongoose.Types.ObjectId,
+            type: String,
             required: true,
         },
         timestamp: {
@@ -68,11 +69,11 @@ const auctionLogSchema = new mongoose.Schema(
 const auctionSchema = new mongoose.Schema(
     {
         tournamentId: {
-            type: mongoose.Types.ObjectId,
+            type: String,
             required: true,
         },
         categoryId: {
-            type: mongoose.Types.ObjectId,
+            type: String,
             required: true,
         },
         status: {
@@ -87,8 +88,24 @@ const auctionSchema = new mongoose.Schema(
             enum: IAuctionLogType,
             default: IAuctionLogType.MANUAL,
         },
-        currentPlayerId: {
-            type: mongoose.Types.ObjectId,
+        playerQueue: [{
+            type: String,
+        }],
+        currentPlayerIndex: {
+            type: Number,
+            default: 0,
+        },
+        currentRegistrationId: {
+            type: String,
+        },
+        lastSoldResult: {
+            registrationId: { type: String },
+            playerName: { type: String },
+            teamId: { type: String },
+            teamName: { type: String },
+            teamColor: { type: String },
+            soldPrice: { type: Number },
+            timestamp: { type: Date },
         },
         settings: {
             minBidIncrement: {
@@ -132,23 +149,36 @@ auctionSchema.index({ 'logs.timestamp': -1 });
 
 export interface IAuctionLog {
     _id: string;
-    playerId: mongoose.Types.ObjectId;
+    registrationId: string;
     playerName: string;
-    teamId: mongoose.Types.ObjectId;
+    teamId: string;
     teamName: string;
     finalPrice: number;
     auctionType: string;
-    recordedBy: mongoose.Types.ObjectId;
+    recordedBy: string;
+    timestamp: Date;
+}
+
+export interface ILastSoldResult {
+    registrationId: string;
+    playerName: string;
+    teamId: string;
+    teamName: string;
+    teamColor: string;
+    soldPrice: number;
     timestamp: Date;
 }
 
 export interface IAuction extends mongoose.Document {
     _id: string;
-    tournamentId: mongoose.Types.ObjectId;
-    categoryId: mongoose.Types.ObjectId;
+    tournamentId: string;
+    categoryId: string;
     status: string;
     auctionType: string;
-    currentPlayerId?: mongoose.Types.ObjectId;
+    playerQueue: string[];
+    currentPlayerIndex: number;
+    currentRegistrationId?: string;
+    lastSoldResult?: ILastSoldResult;
     settings: {
         minBidIncrement: number;
         bidDurationSeconds: number;

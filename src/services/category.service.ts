@@ -3,6 +3,7 @@ import { tournamentRepository } from '../repository/tournament.repository';
 import { ICategory, ICategoryStatus, IBracketType } from '../models/category.model';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../errors';
 import { SuccessResponse } from '../utils/response.util';
+import { matchService } from './match.service';
 
 class CategoryService {
     async create(tournamentId: string, data: Partial<ICategory>, userId: string) {
@@ -121,8 +122,14 @@ class CategoryService {
     }
 
     async configureBracket(id: string, userId: string) {
-        return this.updateStatus(id, userId, ICategoryStatus.BRACKET_CONFIGURED,
+        // First generate the bracket (will validate auth + teams)
+        const bracketResult = await matchService.generateBracket(id, userId);
+
+        // Then transition the status
+        await this.updateStatus(id, userId, ICategoryStatus.BRACKET_CONFIGURED,
             [ICategoryStatus.AUCTION], 'Category must be in auction status.');
+
+        return bracketResult;
     }
 
     async startCategory(id: string, userId: string) {

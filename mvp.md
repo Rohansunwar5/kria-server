@@ -117,6 +117,15 @@ What users see
 o	Team
 o	Players bought
 o	Total spent
+
+📌 POST-MVP NOTE — REAL-TIME UPGRADE
+MVP uses HTTP polling (2s interval) for auction display updates.
+Once all MVP features are complete, upgrade to WebSockets (Socket.io):
+•	Instant real-time updates on broadcast display & player views
+•	Eliminates polling overhead
+•	Required foundation for Live Auction (Type 2)
+•	Server: Socket.io event emitters on sell/skip/next/pause actions
+•	Client: Socket.io listeners replace setInterval polling
 ________________________________________
 B. AUCTION TYPE 2 — IN-APP LIVE AUCTION (SECONDARY MVP)
 Workflow

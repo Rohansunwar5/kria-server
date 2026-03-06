@@ -9,6 +9,9 @@ import teamRouter from './team.route';
 import categoryRouter from './category.route';
 import registrationRouter from './tournamentRegistration.route';
 import sportConfigRouter from './sportConfig.route';
+import auctionRouter from './auction.route';
+import bulkUploadRouter from './bulkUpload.route';
+import matchRouter from './match.route';
 
 const v1Router = Router();
 
@@ -37,4 +40,14 @@ v1Router.use('/registrations', registrationRouter);
 // Sport Configuration Routes
 v1Router.use('/sports', sportConfigRouter);
 
+// Auction Routes
+v1Router.use('/auction', auctionRouter);
+
+// Bulk Upload Routes (no auth — emergency)
+v1Router.use('/registrations', bulkUploadRouter);
+
+// Match Routes
+v1Router.use('/matches', matchRouter);
+
 export default v1Router;
+

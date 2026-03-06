@@ -93,6 +93,11 @@ const matchSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        competitorType: {
+            type: String,
+            enum: ['player', 'team'],
+            default: 'player',
+        },
         bracketRound: {
             type: String,
             required: true,
@@ -103,23 +108,49 @@ const matchSchema = new mongoose.Schema(
             required: true,
             min: 1,
         },
+        roundNumber: {
+            type: Number,
+            min: 1,
+        },
+        positionInRound: {
+            type: Number,
+            min: 0,
+        },
+        nextMatchId: {
+            type: mongoose.Types.ObjectId,
+        },
+        nextMatchSlot: {
+            type: String,
+            enum: ['player1', 'player2', 'team1', 'team2'],
+        },
+        sourceMatchIds: [{
+            type: mongoose.Types.ObjectId,
+        }],
         teams: {
             team1Id: {
                 type: mongoose.Types.ObjectId,
-                required: true,
             },
             team2Id: {
                 type: mongoose.Types.ObjectId,
-                required: true,
             },
             team1Name: {
                 type: String,
-                required: true,
             },
             team2Name: {
                 type: String,
-                required: true,
             },
+        },
+        player1: {
+            registrationId: { type: String },
+            name: { type: String },
+            teamId: { type: String },
+            teamName: { type: String },
+        },
+        player2: {
+            registrationId: { type: String },
+            name: { type: String },
+            teamId: { type: String },
+            teamName: { type: String },
         },
         players: {
             team1Players: [{
@@ -255,13 +286,31 @@ export interface IMatch extends mongoose.Document {
     tournamentId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     sportType: string;
+    competitorType: 'player' | 'team';
     bracketRound: string;
     matchNumber: number;
+    roundNumber?: number;
+    positionInRound?: number;
+    nextMatchId?: mongoose.Types.ObjectId;
+    nextMatchSlot?: 'player1' | 'player2' | 'team1' | 'team2';
+    sourceMatchIds?: mongoose.Types.ObjectId[];
     teams: {
         team1Id: mongoose.Types.ObjectId;
         team2Id: mongoose.Types.ObjectId;
         team1Name: string;
         team2Name: string;
+    };
+    player1?: {
+        registrationId: string;
+        name: string;
+        teamId: string;
+        teamName: string;
+    };
+    player2?: {
+        registrationId: string;
+        name: string;
+        teamId: string;
+        teamName: string;
     };
     players: {
         team1Players: mongoose.Types.ObjectId[];

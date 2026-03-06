@@ -40,7 +40,12 @@ const tournamentRegistrationSchema = new mongoose.Schema(
             required: true,
         },
         profile: {
-            name: {
+            firstName: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            lastName: {
                 type: String,
                 required: true,
                 trim: true,
@@ -127,7 +132,8 @@ export interface ITournamentRegistration extends mongoose.Document {
     tournamentId: string;
     categoryId: string;
     profile: {
-        name: string;
+        firstName: string;
+        lastName: string;
         age: number;
         gender: string;
         phone: string;

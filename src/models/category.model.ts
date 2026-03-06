@@ -12,7 +12,8 @@ export enum IGender {
 
 export enum IMatchType {
     SINGLES = 'singles',
-    DOUBLES = 'doubles'
+    DOUBLES = 'doubles',
+    TEAM = 'team'
 }
 
 export enum IBracketType {
@@ -30,9 +31,6 @@ export enum ICategoryStatus {
     COMPLETED = 'completed'
 }
 
-// ============================================================================
-// SCHEMA
-// ============================================================================
 
 const categorySchema = new mongoose.Schema(
     {

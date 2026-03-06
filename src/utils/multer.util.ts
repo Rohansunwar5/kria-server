@@ -56,3 +56,16 @@ export const uploadAnyFile = multer({
 
 // Alias for profile image upload
 export const profileImageUpload = upload;
+
+// Excel file upload (for bulk operations)
+export const excelUpload = multer({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  storage: multer.memoryStorage(),
+  fileFilter: function (_req, file, callback) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!['.xlsx', '.xls'].includes(ext)) {
+      return callback(new Error('Only Excel files (.xlsx, .xls) are allowed'));
+    }
+    callback(null, true);
+  },
+});
