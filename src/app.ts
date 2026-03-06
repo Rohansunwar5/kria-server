@@ -19,7 +19,7 @@ app.set('views', 'src/views');
 
 app.use(express.json({ limit: '8mb' }));
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://kria-sports.onrender.com'], // Update this to match your frontend URL
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://kria-sports.netlify.app'], // Update this to match your frontend URL
   credentials: true,
 }));
 app.use(xss());
