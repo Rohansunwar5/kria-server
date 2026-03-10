@@ -62,6 +62,16 @@ const auctionLogSchema = new mongoose.Schema(
     { _id: true }
 );
 
+const bidHistoryEntrySchema = new mongoose.Schema(
+    {
+        teamId: { type: String, required: true },
+        teamName: { type: String, required: true },
+        amount: { type: Number, required: true },
+        timestamp: { type: Date, default: Date.now },
+    },
+    { _id: false }
+);
+
 // ============================================================================
 // SCHEMA
 // ============================================================================
@@ -119,7 +129,24 @@ const auctionSchema = new mongoose.Schema(
                 min: 5,
                 default: 30,
             },
+            hardLimit: {
+                type: Number,
+                min: 0,
+                default: 0,
+            },
         },
+        liveBid: {
+            currentPrice: { type: Number, default: 0 },
+            highestBidderId: { type: String, default: '' },
+            highestBidderName: { type: String, default: '' },
+            bidHistory: [bidHistoryEntrySchema],
+            tiedTeams: [{ type: String }],
+            tieBreakerActive: { type: Boolean, default: false },
+            spinWinnerId: { type: String, default: null },
+            spinStartedAt: { type: Date, default: null }
+        },
+        unsoldQueue: [{ type: String }],
+        rotationCount: { type: Number, default: 0 },
         logs: [auctionLogSchema],
         startedAt: {
             type: Date,
@@ -182,7 +209,20 @@ export interface IAuction extends mongoose.Document {
     settings: {
         minBidIncrement: number;
         bidDurationSeconds: number;
+        hardLimit: number;
     };
+    liveBid: {
+        currentPrice: number;
+        highestBidderId: string;
+        highestBidderName: string;
+        bidHistory: { teamId: string; teamName: string; amount: number; timestamp: Date }[];
+        tiedTeams: string[];
+        tieBreakerActive: boolean;
+        spinWinnerId: string | null;
+        spinStartedAt: Date | null;
+    };
+    unsoldQueue: string[];
+    rotationCount: number;
     logs: IAuctionLog[];
     startedAt?: Date;
     completedAt?: Date;

@@ -7,15 +7,22 @@ import {
     auctionStatusValidator,
     sellPlayerValidator,
     auctionActionValidator,
+    placeBidValidator,
+    resolveHardLimitValidator,
 } from '../middlewares/validators/auction.validator';
 import {
     startAuction,
     getAuctionStatus,
     sellPlayer,
+    placeBid,
+    resolveHardLimit,
+    startTieBreaker,
+    triggerSpinWheel,
     nextPlayer,
     skipPlayer,
     undoLastAction,
     pauseAuction,
+    endAuction,
     getSoldLog,
 } from '../controllers/auction.controller';
 
@@ -25,32 +32,23 @@ const auctionRouter = Router();
 // PUBLIC ROUTES (for auction display polling)
 // ============================================================================
 
-// Get auction status (polled by display page — no auth)
 auctionRouter.get('/:tournamentId/:categoryId/status', auctionStatusValidator, validateRequest, asyncHandler(getAuctionStatus));
-
-// Get sold log (public for display)
 auctionRouter.get('/:tournamentId/:categoryId/sold-log', auctionStatusValidator, validateRequest, asyncHandler(getSoldLog));
 
 // ============================================================================
 // PROTECTED ROUTES (Organizer/Staff Only)
 // ============================================================================
 
-// Start auction for a category
 auctionRouter.post('/start', isOrganizerLoggedIn, startAuctionValidator, validateRequest, asyncHandler(startAuction));
-
-// Sell current player to team
 auctionRouter.post('/sell', isOrganizerLoggedIn, sellPlayerValidator, validateRequest, asyncHandler(sellPlayer));
-
-// Move to next player
+auctionRouter.post('/bid', isOrganizerLoggedIn, placeBidValidator, validateRequest, asyncHandler(placeBid));
+auctionRouter.post('/start-tie-breaker', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(startTieBreaker));
+auctionRouter.post('/trigger-spin', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(triggerSpinWheel));
+auctionRouter.post('/resolve-hard-limit', isOrganizerLoggedIn, resolveHardLimitValidator, validateRequest, asyncHandler(resolveHardLimit));
 auctionRouter.post('/next', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(nextPlayer));
-
-// Skip current player (unsold)
 auctionRouter.post('/skip', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(skipPlayer));
-
-// Undo last action
 auctionRouter.post('/undo', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(undoLastAction));
-
-// Pause / Resume auction
 auctionRouter.post('/pause', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(pauseAuction));
+auctionRouter.post('/end', isOrganizerLoggedIn, auctionActionValidator, validateRequest, asyncHandler(endAuction));
 
 export default auctionRouter;

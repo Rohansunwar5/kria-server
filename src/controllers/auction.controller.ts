@@ -2,11 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { auctionService } from '../services/auction.service';
 
 export const startAuction = async (req: Request, res: Response, next: NextFunction) => {
-    const { tournamentId, categoryId } = req.body;
+    const { tournamentId, categoryId, bidIncrement, hardLimit } = req.body;
     const userId = req.organizer._id;
-    console.log(userId);
-
-    const response = await auctionService.startAuction(tournamentId, categoryId, userId);
+    const response = await auctionService.startAuction(tournamentId, categoryId, userId, { bidIncrement, hardLimit });
     next(response);
 };
 
@@ -20,6 +18,34 @@ export const sellPlayer = async (req: Request, res: Response, next: NextFunction
     const { tournamentId, categoryId, teamId, soldPrice } = req.body;
     const userId = req.organizer._id;
     const response = await auctionService.sellPlayer(tournamentId, categoryId, teamId, soldPrice, userId);
+    next(response);
+};
+
+export const placeBid = async (req: Request, res: Response, next: NextFunction) => {
+    const { tournamentId, categoryId, teamId } = req.body;
+    const userId = req.organizer._id;
+    const response = await auctionService.placeBid(tournamentId, categoryId, teamId, userId);
+    next(response);
+};
+
+export const startTieBreaker = async (req: Request, res: Response, next: NextFunction) => {
+    const { tournamentId, categoryId } = req.body;
+    const userId = req.organizer._id;
+    const response = await auctionService.startTieBreaker(tournamentId, categoryId, userId);
+    next(response);
+};
+
+export const triggerSpinWheel = async (req: Request, res: Response, next: NextFunction) => {
+    const { tournamentId, categoryId } = req.body;
+    const userId = req.organizer._id;
+    const response = await auctionService.triggerSpinWheel(tournamentId, categoryId, userId);
+    next(response);
+};
+
+export const resolveHardLimit = async (req: Request, res: Response, next: NextFunction) => {
+    const { tournamentId, categoryId, winnerTeamId } = req.body;
+    const userId = req.organizer._id;
+    const response = await auctionService.resolveHardLimit(tournamentId, categoryId, winnerTeamId, userId);
     next(response);
 };
 
@@ -48,6 +74,13 @@ export const pauseAuction = async (req: Request, res: Response, next: NextFuncti
     const { tournamentId, categoryId } = req.body;
     const userId = req.organizer._id;
     const response = await auctionService.pauseAuction(tournamentId, categoryId, userId);
+    next(response);
+};
+
+export const endAuction = async (req: Request, res: Response, next: NextFunction) => {
+    const { tournamentId, categoryId } = req.body;
+    const userId = req.organizer._id;
+    const response = await auctionService.endAuction(tournamentId, categoryId, userId);
     next(response);
 };
 
