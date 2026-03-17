@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import { playerRepository } from '../repository/player.repository';
 import { IPlayerStatus } from '../models/player.model';
+import TournamentRegistration from '../models/tournamentRegistration.model';
+import Tournament from '../models/tournament.model';
+import Category from '../models/category.model';
+import Team from '../models/team.model';
 
 import config from '../config';
 import mailService from './mail.service';
@@ -254,13 +258,83 @@ class PlayerAuthService {
         return new SuccessResponse('Profile fetched.', player);
     }
 
-    async updateProfile(playerId: string, data: { firstName?: string; lastName?: string; phone?: string }) {
+    async updateProfile(playerId: string, data: { firstName?: string; lastName?: string; phone?: string; sport?: string; location?: string }) {
         const player = await playerRepository.updateById(playerId, data);
         if (!player) {
             throw new NotFoundError('Player not found.');
         }
 
         return new SuccessResponse('Profile updated.', player);
+    }
+
+    async getPlayerStats(playerId: string) {
+        const registrations = await TournamentRegistration.find({
+            playerId: playerId.toString(),
+            isActive: true,
+        }).lean() as any[];
+
+        const active = registrations.filter(r => !['withdrawn', 'rejected'].includes(r.status));
+
+        return new SuccessResponse('Player stats fetched.', {
+            totalTournaments: active.length,
+            pendingCount: active.filter(r => r.status === 'pending').length,
+            approvedCount: active.filter(r => r.status === 'approved').length,
+            auctionedCount: active.filter(r => ['auctioned', 'assigned'].includes(r.status)).length,
+            totalMatchesPlayed: active.reduce((s, r) => s + (r.stats?.matchesPlayed || 0), 0),
+            totalMatchesWon: active.reduce((s, r) => s + (r.stats?.matchesWon || 0), 0),
+            totalPointsContributed: active.reduce((s, r) => s + (r.stats?.pointsContributed || 0), 0),
+            totalEarnings: active.filter(r => r.auctionData?.soldPrice).reduce((s, r) => s + (r.auctionData.soldPrice || 0), 0),
+            highestBid: active.reduce((max, r) => Math.max(max, r.auctionData?.soldPrice || 0), 0),
+        });
+    }
+
+    async getPlayerTournamentHistory(playerId: string) {
+        const registrations = await TournamentRegistration.find({
+            playerId: playerId.toString(),
+            isActive: true,
+            status: { $nin: ['withdrawn', 'rejected'] },
+        }).sort({ createdAt: -1 }).lean() as any[];
+
+        if (registrations.length === 0) {
+            return new SuccessResponse('Tournament history fetched.', { history: [] });
+        }
+
+        const tournamentIds = [...new Set(registrations.map(r => r.tournamentId))];
+        const categoryIds   = [...new Set(registrations.map(r => r.categoryId))];
+        const teamIds       = [...new Set(registrations.filter(r => r.teamId).map(r => r.teamId))];
+
+        const [tournaments, categories, teams] = await Promise.all([
+            Tournament.find({ _id: { $in: tournamentIds } })
+                .select('name sport startDate endDate status venue bannerImage').lean(),
+            Category.find({ _id: { $in: categoryIds } })
+                .select('name gender matchType').lean(),
+            teamIds.length > 0
+                ? Team.find({ _id: { $in: teamIds } }).select('name primaryColor logo').lean()
+                : Promise.resolve([]),
+        ]);
+
+        const tournamentMap: Record<string, any> = {};
+        (tournaments as any[]).forEach(t => { tournamentMap[t._id.toString()] = t; });
+
+        const categoryMap: Record<string, any> = {};
+        (categories as any[]).forEach(c => { categoryMap[c._id.toString()] = c; });
+
+        const teamMap: Record<string, any> = {};
+        (teams as any[]).forEach(t => { teamMap[t._id.toString()] = t; });
+
+        const history = registrations.map(reg => ({
+            _id: reg._id,
+            status: reg.status,
+            profile: reg.profile,
+            auctionData: reg.auctionData,
+            stats: reg.stats,
+            createdAt: reg.createdAt,
+            tournament: tournamentMap[reg.tournamentId] || null,
+            category: categoryMap[reg.categoryId] || null,
+            team: reg.teamId ? (teamMap[reg.teamId] || null) : null,
+        }));
+
+        return new SuccessResponse('Tournament history fetched.', { history });
     }
 
     async updateProfileImage(playerId: string, imagePath: string) {

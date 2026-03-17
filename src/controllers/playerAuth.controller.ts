@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { playerAuthService } from '../services/playerAuth.service';
+import uploadService from '../services/upload.service';
+import { BadRequestError } from '../errors';
 
 // ============================================================================
 // REGISTRATION
@@ -87,15 +89,28 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     const { _id } = req.player;
-    const { firstName, lastName, phone } = req.body;
-    const response = await playerAuthService.updateProfile(_id, { firstName, lastName, phone });
+    const { firstName, lastName, phone, sport, location } = req.body;
+    const response = await playerAuthService.updateProfile(_id, { firstName, lastName, phone, sport, location });
+    next(response);
+};
+
+export const getPlayerStats = async (req: Request, res: Response, next: NextFunction) => {
+    const { _id } = req.player;
+    const response = await playerAuthService.getPlayerStats(_id);
+    next(response);
+};
+
+export const getPlayerTournamentHistory = async (req: Request, res: Response, next: NextFunction) => {
+    const { _id } = req.player;
+    const response = await playerAuthService.getPlayerTournamentHistory(_id);
     next(response);
 };
 
 export const updateProfileImage = async (req: Request, res: Response, next: NextFunction) => {
     const { _id } = req.player;
-    const imagePath = req.file?.path ?? '';
-    const response = await playerAuthService.updateProfileImage(_id, imagePath);
+    if (!req.file) throw new BadRequestError('No image provided');
+    const { url } = await uploadService.uploadToS3(req.file, 'player-profiles', _id);
+    const response = await playerAuthService.updateProfileImage(_id, url);
     next(response);
 };
 

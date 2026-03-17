@@ -62,6 +62,16 @@ const playerSchema = new mongoose.Schema(
             enum: IAuthProvider,
             default: IAuthProvider.EMAIL,
         },
+        sport: {
+            type: String,
+            trim: true,
+            maxLength: 50,
+        },
+        location: {
+            type: String,
+            trim: true,
+            maxLength: 100,
+        },
         profileImage: {
             type: String,
         },
@@ -101,6 +111,8 @@ export interface IPlayer extends mongoose.Document {
     password?: string;
     status: string;
     authProvider: string;
+    sport?: string;
+    location?: string;
     profileImage?: string;
     fcmTokens: string[];
     otp?: {

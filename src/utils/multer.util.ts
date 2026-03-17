@@ -54,8 +54,21 @@ export const uploadAnyFile = multer({
   },
 });
 
-// Alias for profile image upload
+// Alias for profile image upload (disk storage)
 export const profileImageUpload = upload;
+
+// Profile image upload using memory storage (required for S3 uploads)
+export const profileImageMemoryUpload = multer({
+  limits: { fileSize: 5 * 1000 * 1000 },
+  storage: multer.memoryStorage(),
+  fileFilter: function (_req, file, callback) {
+    const ext = path.extname(file.originalname);
+    if (!MULTER_ALLOWED_FILE_EXTENSIONS.includes(ext.replace('.', ''))) {
+      return callback(new Error('Only images are allowed'));
+    }
+    callback(null, true);
+  },
+});
 
 // Excel file upload (for bulk operations)
 export const excelUpload = multer({

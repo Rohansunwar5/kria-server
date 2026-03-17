@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import { organizerRepository } from '../repository/organizer.repository';
 import { IOrganizerStatus, IOrganizerRole } from '../models/organizer.model';
+import Tournament from '../models/tournament.model';
+import TournamentRegistration from '../models/tournamentRegistration.model';
 import { BadRequestError, NotFoundError, UnauthorizedError, InternalServerError } from '../errors';
 import config from '../config';
 import { SuccessResponse } from '../utils/response.util';
@@ -287,6 +289,33 @@ class OrganizerAuthService {
         return new SuccessResponse('Organization details updated.', organizer);
     }
 
+    async getOrganizerStats(organizerId: string) {
+        const tournaments = await Tournament.find({
+            createdBy: organizerId.toString(),
+            isActive: true,
+        }).select('_id status').lean() as any[];
+
+        const tournamentIds = tournaments.map(t => t._id.toString());
+
+        const activeStatuses = ['registration_open', 'registration_closed', 'auction_in_progress', 'ongoing'];
+
+        const totalPlayersHosted = tournamentIds.length > 0
+            ? await TournamentRegistration.countDocuments({
+                tournamentId: { $in: tournamentIds },
+                status: { $in: ['approved', 'auctioned', 'assigned'] },
+                isActive: true,
+            })
+            : 0;
+
+        return new SuccessResponse('Organizer stats fetched.', {
+            totalTournaments: tournaments.length,
+            activeTournaments: tournaments.filter(t => activeStatuses.includes(t.status)).length,
+            completedTournaments: tournaments.filter(t => t.status === 'completed').length,
+            draftTournaments: tournaments.filter(t => t.status === 'draft').length,
+            totalPlayersHosted,
+        });
+    }
+
     // ========================================================================
     // TOKEN MANAGEMENT
     // ========================================================================
@@ -339,12 +368,18 @@ class OrganizerAuthService {
     // ========================================================================
 
     private async sendOtp(email: string) {
-        const otp = nanoid(6).toUpperCase();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit number
         const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
+
         console.log('OTP:', otp);
 
         await organizerRepository.updateOtp(email, { code: otp, expiresAt });
-        await mailService.sendEmail(email, 'otp.ejs', { otp }, 'Kria Sports - Email Verification OTP');
+        await mailService.sendEmail(
+            email,
+            'otp.ejs',
+            { otp },
+            'Kria Sports - Email Verification OTP'
+        );
     }
 
     private async validateOtp(organizer: { otp?: { code: string; expiresAt: Date } }, inputOtp: string) {

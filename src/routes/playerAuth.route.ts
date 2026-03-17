@@ -16,7 +16,7 @@ import {
     fcmTokenValidator,
     updateProfileValidator,
 } from '../middlewares/validators/auth.validator';
-import { profileImageUpload } from '../utils/multer.util';
+import { profileImageMemoryUpload } from '../utils/multer.util';
 
 const playerAuthRouter = Router();
 
@@ -46,7 +46,9 @@ playerAuthRouter.post('/refresh-token', refreshTokenValidator, asyncHandler(play
 
 playerAuthRouter.get('/profile', isPlayerLoggedIn, asyncHandler(playerAuthController.getProfile));
 playerAuthRouter.patch('/profile', isPlayerLoggedIn, updateProfileValidator, asyncHandler(playerAuthController.updateProfile));
-playerAuthRouter.put('/profile-image', isPlayerLoggedIn, profileImageUpload.single('image'), asyncHandler(playerAuthController.updateProfileImage));
+playerAuthRouter.put('/profile-image', isPlayerLoggedIn, profileImageMemoryUpload.single('image'), asyncHandler(playerAuthController.updateProfileImage));
+playerAuthRouter.get('/stats', isPlayerLoggedIn, asyncHandler(playerAuthController.getPlayerStats));
+playerAuthRouter.get('/tournament-history', isPlayerLoggedIn, asyncHandler(playerAuthController.getPlayerTournamentHistory));
 
 // PROTECTED ROUTES - Password Change
 

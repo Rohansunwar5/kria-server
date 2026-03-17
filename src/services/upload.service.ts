@@ -30,7 +30,8 @@ class UploadService {
     if (!response) throw new BadRequestError('Failed to upload file');
 
     return {
-      fileName: fileNameWithExtn
+      fileName: fileNameWithExtn,
+      url: response.Location,
     };
   }
 

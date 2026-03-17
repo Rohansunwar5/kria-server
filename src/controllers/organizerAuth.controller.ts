@@ -101,6 +101,12 @@ export const updateOrganization = async (req: Request, res: Response, next: Next
     next(response);
 };
 
+export const getOrganizerStats = async (req: Request, res: Response, next: NextFunction) => {
+    const { _id } = req.organizer;
+    const response = await organizerAuthService.getOrganizerStats(_id);
+    next(response);
+};
+
 // ============================================================================
 // TOKENS
 // ============================================================================

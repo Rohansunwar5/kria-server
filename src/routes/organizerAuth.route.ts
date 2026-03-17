@@ -49,6 +49,7 @@ organizerAuthRouter.get('/profile', isOrganizerLoggedIn, asyncHandler(organizerA
 organizerAuthRouter.patch('/profile', isOrganizerLoggedIn, updateProfileValidator, asyncHandler(organizerAuthController.updateProfile));
 organizerAuthRouter.put('/profile-image', isOrganizerLoggedIn, profileImageUpload.single('image'), asyncHandler(organizerAuthController.updateProfileImage));
 organizerAuthRouter.patch('/organization', isOrganizerLoggedIn, updateOrganizationValidator, asyncHandler(organizerAuthController.updateOrganization));
+organizerAuthRouter.get('/stats', isOrganizerLoggedIn, asyncHandler(organizerAuthController.getOrganizerStats));
 
 // PROTECTED ROUTES - Password Change
 

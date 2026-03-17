@@ -19,8 +19,8 @@ const config = {
 
   SERVER_NAME: `${process.env.SERVER_NAME}-${process.env.NODE_ENV}`! as string,
   S3_BUCKET_NAME: process.env.S3_BUCKET_NAME! as string,
-  AWS_ACCESS_ID: process.env.AWS_ACCESS_ID! as string,
-  AWS_SECRET: process.env.AWS_SECRET! as string,
+  AWS_ACCESS_ID: process.env.AWS_ACCESS_KEY_ID! as string,
+  AWS_SECRET: process.env.AWS_SECRET_ACCESS_KEY! as string,
   AWS_REGION: process.env.AWS_REGION! as string,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID! as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET! as string,
