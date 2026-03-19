@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { organizerAuthService } from '../services/organizerAuth.service';
+import uploadService from '../services/upload.service';
+import { BadRequestError } from '../errors';
 
 // ============================================================================
 // REGISTRATION
@@ -89,8 +91,9 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
 export const updateProfileImage = async (req: Request, res: Response, next: NextFunction) => {
     const { _id } = req.organizer;
-    const imagePath = req.file?.path ?? '';
-    const response = await organizerAuthService.updateProfileImage(_id, imagePath);
+    if (!req.file) throw new BadRequestError('No image provided');
+    const { url } = await uploadService.uploadToS3(req.file, 'organizer-profiles', _id);
+    const response = await organizerAuthService.updateProfileImage(_id, url);
     next(response);
 };
 

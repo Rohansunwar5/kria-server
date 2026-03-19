@@ -17,7 +17,7 @@ import {
     updateProfileValidator,
     updateOrganizationValidator,
 } from '../middlewares/validators/auth.validator';
-import { profileImageUpload } from '../utils/multer.util';
+import { profileImageUpload, profileImageMemoryUpload } from '../utils/multer.util';
 
 const organizerAuthRouter = Router();
 
@@ -47,7 +47,7 @@ organizerAuthRouter.post('/refresh-token', refreshTokenValidator, asyncHandler(o
 
 organizerAuthRouter.get('/profile', isOrganizerLoggedIn, asyncHandler(organizerAuthController.getProfile));
 organizerAuthRouter.patch('/profile', isOrganizerLoggedIn, updateProfileValidator, asyncHandler(organizerAuthController.updateProfile));
-organizerAuthRouter.put('/profile-image', isOrganizerLoggedIn, profileImageUpload.single('image'), asyncHandler(organizerAuthController.updateProfileImage));
+organizerAuthRouter.put('/profile-image', isOrganizerLoggedIn, profileImageMemoryUpload.single('image'), asyncHandler(organizerAuthController.updateProfileImage));
 organizerAuthRouter.patch('/organization', isOrganizerLoggedIn, updateOrganizationValidator, asyncHandler(organizerAuthController.updateOrganization));
 organizerAuthRouter.get('/stats', isOrganizerLoggedIn, asyncHandler(organizerAuthController.getOrganizerStats));
 

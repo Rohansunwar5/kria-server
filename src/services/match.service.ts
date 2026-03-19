@@ -1008,6 +1008,28 @@ class MatchService {
 
         return new SuccessResponse('Bracket reshuffled.');
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LEADERBOARD
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    async getLeaderboard(categoryId: string) {
+        const category = await categoryRepository.getById(categoryId);
+        if (!category) throw new NotFoundError('Category not found.');
+
+        const tournament = await tournamentRepository.getById((category as any).tournamentId.toString());
+        if (!tournament) throw new NotFoundError('Tournament not found.');
+
+        const sportType = (tournament as any).sport || 'badminton';
+        const leaderboard = await matchRepository.getLeaderboardByCategory(categoryId, sportType);
+
+        return new SuccessResponse('Leaderboard fetched.', {
+            leaderboard,
+            sportType,
+            categoryId,
+            categoryName: (category as any).name,
+        });
+    }
 }
 
 export const matchService = new MatchService();

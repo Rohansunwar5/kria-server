@@ -30,7 +30,7 @@ class TournamentService {
     }
 
     async getById(id: string) {
-        const tournament = await tournamentRepository.getById(id);
+        const tournament = await tournamentRepository.getByIdWithCounts(id);
         if (!tournament) {
             throw new NotFoundError('Tournament not found.');
         }

@@ -47,3 +47,9 @@ export const reshuffleBracket = async (req: Request, res: Response, next: NextFu
     const response = await matchService.reshuffleBracket(categoryId, userId);
     next(response);
 };
+
+export const getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
+    const { categoryId } = req.params;
+    const response = await matchService.getLeaderboard(categoryId);
+    next(response);
+};

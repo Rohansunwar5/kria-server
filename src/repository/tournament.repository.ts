@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import TournamentModel, { ITournament, ITournamentStatus } from '../models/tournament.model';
 
 class TournamentRepository {
@@ -12,6 +13,57 @@ class TournamentRepository {
         return this._model.findById(id).lean();
     }
 
+    async getByIdWithCounts(id: string): Promise<any | null> {
+        const result = await this._model.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(id) } },
+            {
+                $lookup: {
+                    from: 'tournamentregistrations',
+                    let: { tid: { $toString: '$_id' } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$tournamentId', '$$tid'] },
+                                isActive: true,
+                                status: { $nin: ['withdrawn', 'rejected'] },
+                            },
+                        },
+                        { $count: 'count' },
+                    ],
+                    as: '_regCount',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'teams',
+                    let: { tid: { $toString: '$_id' } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$tournamentId', '$$tid'] },
+                                isActive: true,
+                            },
+                        },
+                        { $count: 'count' },
+                    ],
+                    as: '_teamCount',
+                },
+            },
+            {
+                $addFields: {
+                    registeredPlayersCount: {
+                        $ifNull: [{ $arrayElemAt: ['$_regCount.count', 0] }, 0],
+                    },
+                    teamsCount: {
+                        $ifNull: [{ $arrayElemAt: ['$_teamCount.count', 0] }, 0],
+                    },
+                },
+            },
+            { $project: { _regCount: 0, _teamCount: 0 } },
+        ]);
+        return result[0] || null;
+    }
+
     async getAll(filters: {
         status?: string;
         sport?: string;
@@ -19,24 +71,75 @@ class TournamentRepository {
         createdBy?: string;
         page?: number;
         limit?: number;
-    } = {}): Promise<{ tournaments: ITournament[]; total: number }> {
+    } = {}): Promise<{ tournaments: any[]; total: number }> {
         const { status, sport, city, createdBy, page = 1, limit = 20 } = filters;
 
-        const query: Record<string, unknown> = { isActive: true };
+        const match: Record<string, unknown> = { isActive: true };
 
-        if (status) query.status = status;
-        if (sport) query.sport = sport;
-        if (city) query['venue.city'] = city;
-        if (createdBy) query.createdBy = createdBy;
+        if (status) match.status = status;
+        if (sport) match.sport = sport;
+        if (city) match['venue.city'] = city;
+        if (createdBy) match.createdBy = createdBy;
 
         const skip = (page - 1) * limit;
 
-        const [tournaments, total] = await Promise.all([
-            this._model.find(query).sort({ startDate: -1 }).skip(skip).limit(limit).lean(),
-            this._model.countDocuments(query),
+        const [result, total] = await Promise.all([
+            this._model.aggregate([
+                { $match: match },
+                { $sort: { startDate: -1 as const } },
+                { $skip: skip },
+                { $limit: limit },
+                // Count registered players (non-withdrawn, active)
+                {
+                    $lookup: {
+                        from: 'tournamentregistrations',
+                        let: { tid: { $toString: '$_id' } },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $eq: ['$tournamentId', '$$tid'] },
+                                    isActive: true,
+                                    status: { $nin: ['withdrawn', 'rejected'] },
+                                },
+                            },
+                            { $count: 'count' },
+                        ],
+                        as: '_regCount',
+                    },
+                },
+                // Count teams
+                {
+                    $lookup: {
+                        from: 'teams',
+                        let: { tid: { $toString: '$_id' } },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $eq: ['$tournamentId', '$$tid'] },
+                                    isActive: true,
+                                },
+                            },
+                            { $count: 'count' },
+                        ],
+                        as: '_teamCount',
+                    },
+                },
+                {
+                    $addFields: {
+                        registeredPlayersCount: {
+                            $ifNull: [{ $arrayElemAt: ['$_regCount.count', 0] }, 0],
+                        },
+                        teamsCount: {
+                            $ifNull: [{ $arrayElemAt: ['$_teamCount.count', 0] }, 0],
+                        },
+                    },
+                },
+                { $project: { _regCount: 0, _teamCount: 0 } },
+            ]),
+            this._model.countDocuments(match),
         ]);
 
-        return { tournaments, total };
+        return { tournaments: result, total };
     }
 
     async getByOrganizer(organizerId: string): Promise<ITournament[]> {

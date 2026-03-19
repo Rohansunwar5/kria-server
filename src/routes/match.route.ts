@@ -14,6 +14,7 @@ import {
     generateBracket,
     getMatchesByCategory,
     getMatchById,
+    getLeaderboard,
     recordResult,
     updateSchedule,
     swapCompetitors,
@@ -28,6 +29,9 @@ const matchRouter = Router();
 
 // Get all matches for a category (bracket view)
 matchRouter.get('/categories/:categoryId', categoryIdValidator, validateRequest, asyncHandler(getMatchesByCategory));
+
+// Get leaderboard for a category (must be before /:id to avoid conflict)
+matchRouter.get('/leaderboard/:categoryId', categoryIdValidator, validateRequest, asyncHandler(getLeaderboard));
 
 // Get single match detail
 matchRouter.get('/:id', matchIdValidator, validateRequest, asyncHandler(getMatchById));
