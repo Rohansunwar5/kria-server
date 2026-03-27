@@ -1,5 +1,7 @@
 import { teamRepository } from '../repository/team.repository';
 import { tournamentRepository } from '../repository/tournament.repository';
+import { tournamentRegistrationRepository } from '../repository/tournamentRegistration.repository';
+import { playerRepository } from '../repository/player.repository';
 import { ITeam } from '../models/team.model';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../errors';
 import { SuccessResponse } from '../utils/response.util';
@@ -30,6 +32,14 @@ class TeamService {
             throw new BadRequestError('A team with this name already exists in the tournament.');
         }
 
+        // Validate captain if provided
+        if (data.captainId) {
+            const captain = await playerRepository.getById(data.captainId);
+            if (!captain) {
+                throw new BadRequestError('Captain player not found.');
+            }
+        }
+
         // Create team with default budget from tournament settings
         const initialBudget = data.initialBudget || tournament.settings.defaultBudget;
         const team = await teamRepository.create({
@@ -38,6 +48,17 @@ class TeamService {
             initialBudget,
             budget: initialBudget,
         });
+
+        // If captain is set, assign all their tournament registrations to this team
+        if (data.captainId) {
+            const registrations = await tournamentRegistrationRepository.getByTournament(tournamentId, {});
+            const captainRegistrations = registrations.filter(
+                r => r.playerId === data.captainId && (r.status === 'approved' || r.status === 'pending')
+            );
+            for (const reg of captainRegistrations) {
+                await tournamentRegistrationRepository.manualAssign(reg._id, team._id);
+            }
+        }
 
         return new SuccessResponse('Team created successfully.', team);
     }
@@ -80,6 +101,35 @@ class TeamService {
             }
         }
 
+        // If captain is being changed, handle registration assignments
+        if (data.captainId !== undefined && data.captainId !== team.captainId) {
+            // Unassign old captain's registrations if they were the captain
+            if (team.captainId) {
+                const oldRegs = await tournamentRegistrationRepository.getByTournament(team.tournamentId, {});
+                const oldCaptainRegs = oldRegs.filter(
+                    r => r.playerId === team.captainId && r.teamId === team._id && r.status === 'assigned'
+                );
+                for (const reg of oldCaptainRegs) {
+                    await tournamentRegistrationRepository.unassignFromTeam(reg._id);
+                }
+            }
+
+            // Assign new captain's registrations
+            if (data.captainId) {
+                const captain = await playerRepository.getById(data.captainId);
+                if (!captain) {
+                    throw new BadRequestError('Captain player not found.');
+                }
+                const registrations = await tournamentRegistrationRepository.getByTournament(team.tournamentId, {});
+                const captainRegistrations = registrations.filter(
+                    r => r.playerId === data.captainId && (r.status === 'approved' || r.status === 'pending')
+                );
+                for (const reg of captainRegistrations) {
+                    await tournamentRegistrationRepository.manualAssign(reg._id, team._id);
+                }
+            }
+        }
+
         const updated = await teamRepository.update(id, data);
         return new SuccessResponse('Team updated successfully.', updated);
     }
@@ -117,6 +167,21 @@ class TeamService {
 
         const updated = await teamRepository.update(id, { budget: newBudget });
         return new SuccessResponse('Team budget updated successfully.', updated);
+    }
+
+    async searchPlayerByEmail(email: string) {
+        const player = await playerRepository.getByEmail(email);
+        if (!player) {
+            throw new NotFoundError('No player found with this email.');
+        }
+        return new SuccessResponse('Player found.', {
+            _id: player._id,
+            firstName: player.firstName,
+            lastName: player.lastName,
+            email: player.email,
+            phone: player.phone,
+            profileImage: player.profileImage,
+        });
     }
 
     async resetBudget(id: string, userId: string) {

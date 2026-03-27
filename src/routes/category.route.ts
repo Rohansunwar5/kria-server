@@ -19,6 +19,7 @@ import {
     configureCategoryBracket,
     startCategory,
     completeCategory,
+    getCategoryAnalytics,
 } from '../controllers/category.controller';
 
 const categoryRouter = Router();
@@ -45,6 +46,9 @@ categoryRouter.put('/categories/:id', isOrganizerLoggedIn, updateCategoryValidat
 
 // Delete category
 categoryRouter.delete('/categories/:id', isOrganizerLoggedIn, getCategoryValidator, validateRequest, asyncHandler(deleteCategory));
+
+// Get category analytics
+categoryRouter.get('/categories/:id/analytics', isOrganizerLoggedIn, getCategoryValidator, validateRequest, asyncHandler(getCategoryAnalytics));
 
 // ============================================================================
 // STATUS MANAGEMENT ROUTES

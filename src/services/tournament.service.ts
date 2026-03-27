@@ -1,4 +1,6 @@
 import { tournamentRepository } from '../repository/tournament.repository';
+import { playerRepository } from '../repository/player.repository';
+import { teamRepository } from '../repository/team.repository';
 import { ITournament, ITournamentStatus } from '../models/tournament.model';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../errors';
 import { SuccessResponse } from '../utils/response.util';
@@ -34,6 +36,24 @@ class TournamentService {
         if (!tournament) {
             throw new NotFoundError('Tournament not found.');
         }
+
+        if (tournament.awards && tournament.awards.length > 0) {
+            const playerIds = tournament.awards.filter((a: any) => a.playerId).map((a: any) => a.playerId.toString());
+            const teamIds = tournament.awards.filter((a: any) => a.teamId).map((a: any) => a.teamId.toString());
+
+            const players = playerIds.length > 0 ? await Promise.all(playerIds.map((pid: string) => playerRepository.getById(pid))) : [];
+            const teams = teamIds.length > 0 ? await Promise.all(teamIds.map((tid: string) => teamRepository.getById(tid))) : [];
+
+            const playerMap = players.reduce((acc: any, p: any) => p ? { ...acc, [p._id.toString()]: p } : acc, {});
+            const teamMap = teams.reduce((acc: any, t: any) => t ? { ...acc, [t._id.toString()]: t } : acc, {});
+
+            tournament.awards = tournament.awards.map((a: any) => ({
+                ...a,
+                player: a.playerId && playerMap[a.playerId.toString()] ? playerMap[a.playerId.toString()] : null,
+                team: a.teamId && teamMap[a.teamId.toString()] ? teamMap[a.teamId.toString()] : null
+            }));
+        }
+
         return new SuccessResponse('Tournament fetched successfully.', tournament);
     }
 
@@ -225,6 +245,26 @@ class TournamentService {
 
         const updated = await tournamentRepository.removeStaff(tournamentId, staffId);
         return new SuccessResponse('Staff removed successfully.', updated);
+    }
+
+    // ========================================================================
+    // AWARDS
+    // ========================================================================
+
+    async grantAward(tournamentId: string, data: { title: string, playerId?: string, teamId?: string, categoryId?: string, description?: string }, userId: string) {
+        const tournament = await tournamentRepository.getById(tournamentId);
+        if (!tournament) throw new NotFoundError('Tournament not found.');
+
+        const isAuthorized = await tournamentRepository.isOrganizerOrStaff(tournamentId, userId);
+        if (!isAuthorized) throw new ForbiddenError('Not authorized.');
+
+        const updated = await tournamentRepository.addAward(tournamentId, data);
+
+        if (data.playerId) {
+            await playerRepository.addTitle(data.playerId, data.title);
+        }
+
+        return new SuccessResponse('Award granted successfully.', updated);
     }
 
     // ========================================================================

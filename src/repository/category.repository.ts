@@ -12,6 +12,10 @@ class CategoryRepository {
         return this._model.findById(id).lean();
     }
 
+    async getByIds(ids: string[]): Promise<ICategory[]> {
+        return this._model.find({ _id: { $in: ids } }).select('name gender matchType').lean();
+    }
+
     async getByTournament(tournamentId: string): Promise<ICategory[]> {
         return this._model.find({ tournamentId, isActive: true }).sort({ name: 1 }).lean();
     }

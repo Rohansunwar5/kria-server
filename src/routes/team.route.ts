@@ -9,6 +9,7 @@ import {
     getTeamsByTournamentValidator,
     updateBudgetValidator,
     resetBudgetValidator,
+    searchPlayerByEmailValidator,
 } from '../middlewares/validators/team.validator';
 import {
     createTeam,
@@ -18,6 +19,7 @@ import {
     deleteTeam,
     updateTeamBudget,
     resetTeamBudget,
+    searchPlayerByEmail,
 } from '../controllers/team.controller';
 
 const teamRouter = Router();
@@ -32,6 +34,9 @@ teamRouter.get('/teams/:id', getTeamValidator, validateRequest, asyncHandler(get
 
 
 // PROTECTED ROUTES (Organizer/Staff Only)
+// Search player by email (for captain selection)
+teamRouter.get('/players/search-by-email', isOrganizerLoggedIn, searchPlayerByEmailValidator, validateRequest, asyncHandler(searchPlayerByEmail));
+
 // Create team
 teamRouter.post('/tournaments/:tournamentId/teams', isOrganizerLoggedIn, createTeamValidator, validateRequest, asyncHandler(createTeam));
 

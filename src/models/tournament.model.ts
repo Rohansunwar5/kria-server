@@ -116,6 +116,13 @@ const tournamentSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        awards: [{
+            title: { type: String, required: true },
+            playerId: { type: String },
+            teamId: { type: String },
+            categoryId: { type: String },
+            description: { type: String },
+        }],
     },
     { timestamps: true }
 );
@@ -153,6 +160,13 @@ export interface ITournament extends mongoose.Document {
         allowLateRegistration: boolean;
     };
     isActive: boolean;
+    awards?: {
+        title: string;
+        playerId?: string;
+        teamId?: string;
+        categoryId?: string;
+        description?: string;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }

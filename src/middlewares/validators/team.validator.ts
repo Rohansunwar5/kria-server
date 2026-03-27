@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 
 export const createTeamValidator = [
     param('tournamentId')
@@ -35,6 +35,9 @@ export const createTeamValidator = [
     body('initialBudget')
         .optional()
         .isInt({ min: 0 }).withMessage('Initial budget must be non-negative.'),
+    body('captainId')
+        .optional()
+        .isMongoId().withMessage('Invalid captain ID.'),
 ];
 
 export const updateTeamValidator = [
@@ -69,6 +72,9 @@ export const updateTeamValidator = [
         .optional()
         .trim()
         .isURL().withMessage('WhatsApp group link must be a valid URL.'),
+    body('captainId')
+        .optional()
+        .isMongoId().withMessage('Invalid captain ID.'),
 ];
 
 export const getTeamValidator = [
@@ -92,4 +98,11 @@ export const updateBudgetValidator = [
 export const resetBudgetValidator = [
     param('id')
         .isMongoId().withMessage('Invalid team ID.'),
+];
+
+export const searchPlayerByEmailValidator = [
+    query('email')
+        .trim()
+        .notEmpty().withMessage('Email is required.')
+        .isEmail().withMessage('Invalid email address.'),
 ];

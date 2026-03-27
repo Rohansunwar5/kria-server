@@ -28,6 +28,8 @@ const config = {
   JWT_CACHE_ENCRYPTION_KEY: process.env.JWT_CACHE_ENCRYPTION_KEY! as string,
   GMAIL_USER: process.env.GMAIL_USER! as string,
   GMAIL_PASSWORD: process.env.GMAIL_PASSWORD! as string,
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID! as string,
+  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET! as string,
   DEFAULT_COUNTRY_CODE: 'IN',
 };
 

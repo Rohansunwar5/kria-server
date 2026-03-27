@@ -20,6 +20,13 @@ export const getCategoriesByTournament = async (req: Request, res: Response, nex
     next(response);
 };
 
+export const getCategoryAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const userId = req.organizer._id;
+    const response = await categoryService.getCategoryAnalytics(id, userId);
+    next(response);
+};
+
 export const updateCategory = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const userId = req.organizer._id;

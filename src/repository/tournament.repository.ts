@@ -13,6 +13,10 @@ class TournamentRepository {
         return this._model.findById(id).lean();
     }
 
+    async getByIds(ids: string[]): Promise<ITournament[]> {
+        return this._model.find({ _id: { $in: ids } }).select('name sport startDate endDate status venue bannerImage').lean();
+    }
+
     async getByIdWithCounts(id: string): Promise<any | null> {
         const result = await this._model.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(id) } },
@@ -181,6 +185,14 @@ class TournamentRepository {
         return this._model.findByIdAndUpdate(
             id,
             { $pull: { staffIds: staffId } },
+            { new: true }
+        ).lean();
+    }
+
+    async addAward(id: string, award: { title: string; playerId?: string; teamId?: string; categoryId?: string; description?: string }): Promise<ITournament | null> {
+        return this._model.findByIdAndUpdate(
+            id,
+            { $push: { awards: award as any } },
             { new: true }
         ).lean();
     }

@@ -4,6 +4,9 @@ import { ICategory, ICategoryStatus, IBracketType } from '../models/category.mod
 import { BadRequestError, NotFoundError, ForbiddenError } from '../errors';
 import { SuccessResponse } from '../utils/response.util';
 import { matchService } from './match.service';
+import { playerRepository } from '../repository/player.repository';
+import { tournamentRegistrationRepository } from '../repository/tournamentRegistration.repository';
+import { teamRepository } from '../repository/team.repository';
 
 class CategoryService {
     async create(tournamentId: string, data: Partial<ICategory>, userId: string) {
@@ -23,6 +26,11 @@ class CategoryService {
         const nameExists = await categoryRepository.existsByName(tournamentId, data.name!);
         if (nameExists) {
             throw new BadRequestError('A category with this name already exists in the tournament.');
+        }
+
+        // Validate registration fee if paid registration is enabled
+        if (data.isPaidRegistration && (!data.registrationFee || data.registrationFee <= 0)) {
+            throw new BadRequestError('Registration fee must be greater than 0 for paid categories.');
         }
 
         // Validate hybrid config if bracket type is hybrid
@@ -62,6 +70,26 @@ class CategoryService {
         return new SuccessResponse('Categories fetched successfully.', categories);
     }
 
+    async getCategoryAnalytics(id: string, userId: string) {
+        const category = await categoryRepository.getById(id);
+        if (!category) throw new NotFoundError('Category not found.');
+
+        const isAuthorized = await tournamentRepository.isOrganizerOrStaff(category.tournamentId, userId);
+        if (!isAuthorized) throw new ForbiddenError('Not authorized.');
+
+        const analytics = await tournamentRegistrationRepository.getAnalyticsByCategory(id);
+
+        const teams = await teamRepository.getByTournament(category.tournamentId);
+        const teamMap = teams.reduce((acc: any, t: any) => ({ ...acc, [t._id.toString()]: t }), {});
+
+        const data = analytics.map(a => ({
+            ...a,
+            team: a.teamId ? teamMap[a.teamId.toString()] : null
+        }));
+
+        return new SuccessResponse('Analytics fetched successfully.', data);
+    }
+
     async update(id: string, data: Partial<ICategory>, userId: string) {
         const category = await categoryRepository.getById(id);
         if (!category) {
@@ -80,6 +108,13 @@ class CategoryService {
             if (nameExists) {
                 throw new BadRequestError('A category with this name already exists in the tournament.');
             }
+        }
+
+        // Validate registration fee if enabling paid registration
+        const isPaid = data.isPaidRegistration ?? category.isPaidRegistration;
+        const fee = data.registrationFee ?? category.registrationFee;
+        if (isPaid && (!fee || fee <= 0)) {
+            throw new BadRequestError('Registration fee must be greater than 0 for paid categories.');
         }
 
         // Validate hybrid config if changing to hybrid
@@ -138,6 +173,41 @@ class CategoryService {
     }
 
     async completeCategory(id: string, userId: string) {
+        try {
+            const matchesRes = await matchService.getMatchesByCategory(id);
+            const matchesList = (matchesRes as any).data?.matches || [];
+            
+            if (matchesList.length > 0) {
+                const finalMatch = matchesList.find((m: any) => m.bracketRound === 'Final' || !m.nextMatchId);
+                
+                if (finalMatch && finalMatch.winnerId) {
+                    const category = await categoryRepository.getById(id);
+                    const tournament = await tournamentRepository.getById(category?.tournamentId || '');
+                    
+                    if (category && tournament) {
+                        const titleString = `Winner of ${category.name} at ${tournament.name}`;
+                        const competitorType = finalMatch.competitorType || 'team';
+                        
+                        if (competitorType === 'player') {
+                            const winnerRegId = finalMatch.winnerId.toString();
+                            const winnerReg = await tournamentRegistrationRepository.getById(winnerRegId);
+                            if (winnerReg && winnerReg.playerId) {
+                                await playerRepository.addTitle(winnerReg.playerId, titleString);
+                            }
+                        } else if (competitorType === 'team') {
+                            const winnerTeamId = finalMatch.winnerId.toString();
+                            const players = await tournamentRegistrationRepository.getByTeam(winnerTeamId);
+                            for (const p of players) {
+                                await playerRepository.addTitle(p.playerId, titleString);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error assigning title upon category completion:', e);
+        }
+
         return this.updateStatus(id, userId, ICategoryStatus.COMPLETED,
             [ICategoryStatus.ONGOING], 'Category must be ongoing.');
     }

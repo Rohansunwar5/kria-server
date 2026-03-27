@@ -48,3 +48,9 @@ export const resetTeamBudget = async (req: Request, res: Response, next: NextFun
     const response = await teamService.resetBudget(id, userId);
     next(response);
 };
+
+export const searchPlayerByEmail = async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.query;
+    const response = await teamService.searchPlayerByEmail(email as string);
+    next(response);
+};

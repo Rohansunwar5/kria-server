@@ -675,6 +675,68 @@ class MatchService {
         await this._autoAdvanceWinner(matchId);
 
         const updated = await matchRepository.getById(matchId);
+
+        // Update player stats
+        try {
+            if (updated) {
+                if (competitorType === 'player') {
+                    const p1Id = updated.player1?.registrationId;
+                    const p2Id = updated.player2?.registrationId;
+                    
+                    if (p1Id && p1Id !== 'TBD') {
+                        await tournamentRegistrationRepository.updateStats(p1Id, {
+                            matchesPlayed: 1,
+                            matchesWon: data.winnerId === p1Id ? 1 : 0,
+                            pointsContributed: data.winnerId === p1Id ? 10 : 0
+                        });
+                    }
+                    if (p2Id && p2Id !== 'TBD') {
+                        await tournamentRegistrationRepository.updateStats(p2Id, {
+                            matchesPlayed: 1,
+                            matchesWon: data.winnerId === p2Id ? 1 : 0,
+                            pointsContributed: data.winnerId === p2Id ? 10 : 0
+                        });
+                    }
+                } else if (competitorType === 'team') {
+                    const t1Id = updated.teams?.team1Id?.toString();
+                    const t2Id = updated.teams?.team2Id?.toString();
+                    
+                    if (t1Id && t1Id !== '000000000000000000000000') {
+                        const t1Players = await tournamentRegistrationRepository.getByTeam(t1Id);
+                        for (const p of t1Players) {
+                            await tournamentRegistrationRepository.updateStats(p._id.toString(), {
+                                matchesPlayed: 1,
+                                matchesWon: data.winnerId === t1Id ? 1 : 0,
+                                pointsContributed: data.winnerId === t1Id ? 10 : 0
+                            });
+                        }
+                    }
+                    if (t2Id && t2Id !== '000000000000000000000000') {
+                        const t2Players = await tournamentRegistrationRepository.getByTeam(t2Id);
+                        for (const p of t2Players) {
+                            await tournamentRegistrationRepository.updateStats(p._id.toString(), {
+                                matchesPlayed: 1,
+                                matchesWon: data.winnerId === t2Id ? 1 : 0,
+                                pointsContributed: data.winnerId === t2Id ? 10 : 0
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error updating player stats for match:', err);
+        }
+
+        // Auto-complete category if this was the Final match
+        try {
+            if (updated && (updated.bracketRound === 'Final' || !updated.nextMatchId)) {
+                const { categoryService } = require('./category.service');
+                await categoryService.completeCategory(match.categoryId.toString(), userId);
+            }
+        } catch (err) {
+            console.error('Error auto-completing category:', err);
+        }
+
         return new SuccessResponse('Match result recorded.', updated);
     }
 

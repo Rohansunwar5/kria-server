@@ -36,6 +36,13 @@ class TournamentRegistrationRepository {
         return this._model.find({ categoryId, isActive: true }).sort({ 'profile.name': 1 }).lean();
     }
 
+    async getAnalyticsByCategory(categoryId: string): Promise<ITournamentRegistration[]> {
+        return this._model.find({ categoryId, isActive: true })
+            .select('playerId teamId profile stats auctionData status')
+            .sort({ 'stats.pointsContributed': -1, 'stats.matchesWon': -1, 'stats.matchesPlayed': -1 })
+            .lean();
+    }
+
     async getByTeam(teamId: string): Promise<ITournamentRegistration[]> {
         return this._model.find({ teamId, isActive: true }).lean();
     }

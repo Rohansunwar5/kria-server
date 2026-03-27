@@ -113,3 +113,10 @@ export const removeStaff = async (req: Request, res: Response, next: NextFunctio
     const response = await tournamentService.removeStaff(id, staffId, userId);
     next(response);
 };
+
+export const grantAward = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const userId = req.organizer._id;
+    const response = await tournamentService.grantAward(id, req.body, userId);
+    next(response);
+};

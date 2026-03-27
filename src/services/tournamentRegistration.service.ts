@@ -3,6 +3,7 @@ import { tournamentRepository } from '../repository/tournament.repository';
 import { categoryRepository } from '../repository/category.repository';
 import { teamRepository } from '../repository/team.repository';
 import { playerRepository } from '../repository/player.repository';
+import { paymentRepository } from '../repository/payment.repository';
 import {
     ITournamentRegistration,
     ITournamentRegistrationStatus
@@ -51,6 +52,26 @@ class TournamentRegistrationService {
         );
         if (exists) {
             throw new BadRequestError('You are already registered for this category.');
+        }
+
+        // Check max registrations limit
+        if (category.maxRegistrations) {
+            const currentCount = await tournamentRegistrationRepository.countByCategory(data.categoryId);
+            if (currentCount >= category.maxRegistrations) {
+                throw new BadRequestError('Registration limit reached for this category.');
+            }
+        }
+
+        // Block direct registration if category requires payment — must go through payment flow
+        if (category.isPaidRegistration) {
+            const paidPayment = await paymentRepository.getByPlayerAndCategory(
+                playerId, data.tournamentId, data.categoryId
+            );
+            if (!paidPayment) {
+                throw new BadRequestError(
+                    `This category requires a registration fee of ₹${category.registrationFee}. Please complete payment to register.`
+                );
+            }
         }
 
         const registration = await tournamentRegistrationRepository.create({

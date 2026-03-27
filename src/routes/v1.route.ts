@@ -12,6 +12,7 @@ import sportConfigRouter from './sportConfig.route';
 import auctionRouter from './auction.route';
 import bulkUploadRouter from './bulkUpload.route';
 import matchRouter from './match.route';
+import paymentRouter from './payment.route';
 
 const v1Router = Router();
 
@@ -48,6 +49,9 @@ v1Router.use('/registrations', bulkUploadRouter);
 
 // Match Routes
 v1Router.use('/matches', matchRouter);
+
+// Payment Routes
+v1Router.use('/payments', paymentRouter);
 
 export default v1Router;
 

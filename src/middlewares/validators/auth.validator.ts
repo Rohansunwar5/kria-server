@@ -1,3 +1,4 @@
+import { body } from 'express-validator';
 import { validateRequest } from '.';
 import { isRequired } from '../../utils/validator.utils';
 
@@ -89,6 +90,10 @@ export const updateProfileValidator = [
   isRequired('firstName', true),
   isRequired('lastName', true),
   isRequired('phone', true),
+  body('gender').optional().isIn(['male', 'female']).withMessage('Gender must be male or female.'),
+  body('dateOfBirth').optional().isISO8601().withMessage('Date of birth must be a valid date.'),
+  body('sport').optional().isString().trim().isLength({ max: 50 }).withMessage('Sport must be at most 50 characters.'),
+  body('location').optional().isString().trim().isLength({ max: 100 }).withMessage('Location must be at most 100 characters.'),
   ...validateRequest
 ];
 

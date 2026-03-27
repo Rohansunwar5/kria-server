@@ -25,6 +25,7 @@ import {
     cancelTournament,
     addStaff,
     removeStaff,
+    grantAward,
 } from '../controllers/tournament.controller';
 
 const tournamentRouter = Router();
@@ -86,5 +87,8 @@ tournamentRouter.post('/:id/staff', isOrganizerLoggedIn, addStaffValidator, vali
 
 // Remove staff
 tournamentRouter.delete('/:id/staff/:staffId', isOrganizerLoggedIn, removeStaffValidator, validateRequest, asyncHandler(removeStaff));
+
+// Grant award
+tournamentRouter.post('/:id/awards', isOrganizerLoggedIn, getTournamentValidator, validateRequest, asyncHandler(grantAward));
 
 export default tournamentRouter;

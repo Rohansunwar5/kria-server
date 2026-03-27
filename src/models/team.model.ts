@@ -46,6 +46,9 @@ const teamSchema = new mongoose.Schema(
                 lowercase: true,
             },
         },
+        captainId: {
+            type: String,
+        },
         whatsappGroupLink: {
             type: String,
             trim: true,
@@ -92,6 +95,7 @@ export interface ITeam extends mongoose.Document {
         phone: string;
         email?: string;
     };
+    captainId?: string;
     whatsappGroupLink?: string;
     budget: number;
     initialBudget: number;

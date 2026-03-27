@@ -258,7 +258,7 @@ class PlayerAuthService {
         return new SuccessResponse('Profile fetched.', player);
     }
 
-    async updateProfile(playerId: string, data: { firstName?: string; lastName?: string; phone?: string; sport?: string; location?: string }) {
+    async updateProfile(playerId: string, data: { firstName?: string; lastName?: string; phone?: string; gender?: string; dateOfBirth?: string; sport?: string; location?: string }) {
         const player = await playerRepository.updateById(playerId, data);
         if (!player) {
             throw new NotFoundError('Player not found.');

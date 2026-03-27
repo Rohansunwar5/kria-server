@@ -1,9 +1,5 @@
 import mongoose from 'mongoose';
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
 export enum IGender {
     MALE = 'male',
     FEMALE = 'female',
@@ -109,6 +105,19 @@ const categorySchema = new mongoose.Schema(
             enum: ICategoryStatus,
             default: ICategoryStatus.SETUP,
         },
+        isPaidRegistration: {
+            type: Boolean,
+            default: false,
+        },
+        registrationFee: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        maxRegistrations: {
+            type: Number,
+            min: 1,
+        },
         isActive: {
             type: Boolean,
             default: true,
@@ -117,17 +126,9 @@ const categorySchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// ============================================================================
-// INDEXES
-// ============================================================================
-
 categorySchema.index({ tournamentId: 1 });
 categorySchema.index({ tournamentId: 1, name: 1 }, { unique: true });
 categorySchema.index({ status: 1 });
-
-// ============================================================================
-// INTERFACE
-// ============================================================================
 
 export interface ICategory extends mongoose.Document {
     _id: string;
@@ -150,6 +151,9 @@ export interface ICategory extends mongoose.Document {
         leagueSize: number;
         topN: number;
     };
+    isPaidRegistration: boolean;
+    registrationFee: number;
+    maxRegistrations?: number;
     status: string;
     isActive: boolean;
     createdAt: Date;

@@ -37,6 +37,7 @@
 | **Real-time** | Socket.IO *(planned)* | Live auction, live scores |
 | **File Storage** | AWS S3 | Team logos, player photos, profile images |
 | **Email** | Nodemailer (Gmail SMTP) | OTP delivery, notifications |
+| **Payment** | Razorpay | Registration fee collection |
 | **Templates** | EJS | Email templates |
 | **Logging** | Winston + AWS CloudWatch | Structured logging |
 | **Clustering** | Node.js `cluster` module | Production multi-core |
@@ -62,6 +63,9 @@ nodemailer, ejs
 
 # Logging
 winston, winston-cloudwatch
+
+# Payment
+razorpay
 
 # Utilities
 xlsx (for bulk Excel uploads)
@@ -144,6 +148,7 @@ src/
 │   ├── sportConfig.controller.ts
 │   ├── contact.controller.ts
 │   ├── bulkUpload.controller.ts
+│   ├── payment.controller.ts
 │   └── health.controller.ts
 │
 ├── services/
@@ -157,6 +162,7 @@ src/
 │   ├── sportConfig.service.ts
 │   ├── contact.service.ts
 │   ├── bulkUpload.service.ts
+│   ├── payment.service.ts
 │   ├── analytics.service.ts
 │   ├── crypto.service.ts
 │   ├── mail.service.ts
@@ -176,6 +182,7 @@ src/
 │   ├── tournamentRegistration.repository.ts
 │   ├── sportConfig.repository.ts
 │   ├── contactlead.repository.ts
+│   ├── payment.repository.ts
 │   └── impressions.repository.ts
 │
 ├── models/
@@ -189,6 +196,7 @@ src/
 │   ├── sportConfig.model.ts
 │   ├── tournamentRegistration.model.ts  # Player-in-tournament (replaces old Player concept)
 │   ├── contactLead.model.ts
+│   ├── payment.model.ts
 │   └── impressions.model.ts
 │
 ├── routes/
@@ -202,6 +210,7 @@ src/
 │   ├── tournamentRegistration.route.ts
 │   ├── sportConfig.route.ts
 │   ├── contact.route.ts
+│   ├── payment.route.ts
 │   └── bulkUpload.route.ts
 │
 ├── middlewares/
@@ -217,7 +226,8 @@ src/
 │       ├── auction.validator.ts
 │       ├── tournamentRegistration.validator.ts
 │       ├── sportConfig.validator.ts
-│       └── contactlead.validator.ts
+│       ├── contactlead.validator.ts
+│       └── payment.validator.ts
 │
 ├── errors/
 │   ├── index.ts                # Barrel export
@@ -326,6 +336,10 @@ const playerSchema = new mongoose.Schema({
     password: { type: String, minLength: 8 }, // Set after OTP verification
     status: { type: String, required: true, enum: IPlayerStatus, default: IPlayerStatus.PENDING },
     authProvider: { type: String, required: true, enum: IAuthProvider, default: IAuthProvider.EMAIL },
+    gender: { type: String, enum: ['male', 'female'] },
+    dateOfBirth: { type: Date },
+    sport: { type: String, trim: true, maxLength: 50 },
+    location: { type: String, trim: true, maxLength: 100 },
     profileImage: { type: String },
     fcmTokens: [{ type: String }],
     otp: {
@@ -333,6 +347,7 @@ const playerSchema = new mongoose.Schema({
         expiresAt: { type: Date },
     },
     isActive: { type: Boolean, default: true },
+    titles: [{ type: String }],
 }, { timestamps: true });
 
 // Indexes
@@ -350,10 +365,15 @@ export interface IPlayer extends mongoose.Document {
     password?: string;
     status: string;
     authProvider: string;
+    gender?: string;
+    dateOfBirth?: Date;
+    sport?: string;
+    location?: string;
     profileImage?: string;
     fcmTokens: string[];
     otp?: { code: string; expiresAt: Date };
     isActive: boolean;
+    titles?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -562,6 +582,9 @@ export interface ICategory extends mongoose.Document {
         leagueSize: number;
         topN: number;
     };
+    isPaidRegistration: boolean;    // default: false — if true, players must pay before registering
+    registrationFee: number;        // default: 0 — amount in INR (required > 0 when isPaidRegistration is true)
+    maxRegistrations?: number;      // optional — if set, limits the number of registrations for this category
     status: string;
     isActive: boolean;
     createdAt: Date;
@@ -913,6 +936,64 @@ export interface IContactLead extends mongoose.Schema {
 // Index: { gameId: 1 }
 ```
 
+### Payment Model (`payment.model.ts`)
+
+> **Razorpay Integration**: Tracks payment orders for paid category registrations. Created when a player initiates payment, updated on verification.
+
+```typescript
+// Enums
+export enum IPaymentStatus {
+    CREATED = 'created',
+    PAID = 'paid',
+    FAILED = 'failed',
+    REFUNDED = 'refunded'
+}
+
+// Interface
+export interface IPayment extends mongoose.Document {
+    _id: string;
+    playerId: string;           // Reference to Player
+    tournamentId: string;
+    categoryId: string;
+    registrationId?: string;    // Linked after successful verification
+    razorpayOrderId: string;    // Razorpay order ID (unique)
+    razorpayPaymentId?: string; // Set after payment
+    razorpaySignature?: string; // Set after verification
+    amount: number;             // Amount in INR
+    currency: string;           // default: 'INR'
+    status: string;             // IPaymentStatus
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// Indexes
+paymentSchema.index({ playerId: 1, tournamentId: 1, categoryId: 1 });
+paymentSchema.index({ razorpayOrderId: 1 });
+paymentSchema.index({ status: 1 });
+```
+
+**Payment Flow:**
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│  1. Player clicks "Pay & Register" on a paid category                    │
+│     POST /payments/create-order  { tournamentId, categoryId }            │
+│     → Razorpay order created, Payment record saved (status: 'created')   │
+│     → Returns: orderId, amount, keyId                                    │
+│                                                                          │
+│  2. Razorpay checkout opens in browser (client-side SDK)                 │
+│     Player completes payment on Razorpay                                 │
+│                                                                          │
+│  3. On success callback, client sends verification                       │
+│     POST /payments/verify  { razorpayOrderId, razorpayPaymentId,         │
+│       razorpaySignature, profile, basePrice }                            │
+│     → Signature verified using HMAC SHA256                               │
+│     → Payment status updated to 'paid'                                   │
+│     → Player auto-registered for the category                            │
+│     → Returns: { payment, registration }                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 5. API Endpoints
@@ -1081,6 +1162,16 @@ export interface IContactLead extends mongoose.Schema {
 | POST | `/` | Create sport config | Organizer |
 | PUT | `/:id` | Update sport config | Organizer |
 | DELETE | `/:id` | Delete sport config | Organizer |
+
+### Payments (`/payments/`)
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/create-order` | Create Razorpay order for category registration | Player |
+| POST | `/verify` | Verify payment and auto-register player | Player |
+| GET | `/status/:orderId` | Get payment status by order ID | Player |
+| GET | `/my-payments` | Get all payments (invoices) for the logged-in player | Player |
+| GET | `/tournaments/:tournamentId` | Get all payments for a tournament | Organizer |
 
 ### Contact (`/contact/`)
 
@@ -1330,6 +1421,10 @@ GOOGLE_CLIENT_SECRET=...
 GMAIL_USER=...
 GMAIL_PASSWORD=...
 
+# Payment (Razorpay)
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
+
 # Notifications
 NOTIFY_TO=...
 ```
@@ -1425,6 +1520,45 @@ NOTIFY_TO=...
   - [ ] Automatic player assignment
   - [ ] Concurrency handling
 
+### Phase 3.5: Payment Gateway ✅
+
+- [x] **Paid Category Registration**
+  - [x] Category model extended with `isPaidRegistration` and `registrationFee` fields
+  - [x] Organizer can toggle paid/free registration per category with custom fee amount
+  - [x] Validation: fee must be > 0 when paid registration is enabled
+
+- [x] **Razorpay Integration**
+  - [x] Payment model (created → paid → failed → refunded)
+  - [x] Razorpay order creation (`POST /payments/create-order`)
+  - [x] Payment verification with HMAC SHA256 signature (`POST /payments/verify`)
+  - [x] Auto-registration on successful payment verification
+  - [x] Payment status endpoint (`GET /payments/status/:orderId`)
+  - [x] Organizer payment view (`GET /payments/tournaments/:tournamentId`)
+  - [x] Registration service blocks direct registration for paid categories without valid payment
+
+### Phase 3.6: Profile Sync, Invoices & Registration Limits ✅
+
+- [x] **Player Profile Enhancements**
+  - [x] Added `gender`, `dateOfBirth`, `sport`, `location`, `titles` fields to Player model
+  - [x] Profile edit form includes gender dropdown and date-of-birth picker
+  - [x] Age and gender auto-synced from player profile during category registration (no manual entry)
+  - [x] Warning shown when profile is incomplete (missing gender/DOB)
+
+- [x] **Category Registration Limits**
+  - [x] Added optional `maxRegistrations` field to Category model
+  - [x] Organizer can set max slots per category (leave empty for unlimited)
+  - [x] Enforced in both registration service and payment order creation
+
+- [x] **Player Invoices**
+  - [x] New endpoint: `GET /payments/my-payments` — returns all paid payments with tournament/category details
+  - [x] Invoices tab in player profile page with total paid summary
+  - [x] Repository methods: `getByPlayer`, `getByIds` (tournament & category)
+
+- [x] **Organizer Payments View**
+  - [x] PaymentsSection component in organizer tournament detail page
+  - [x] Searchable table with player ID, order ID, amount, status, date
+  - [x] Summary stats: total paid count and total amount collected
+
 ### Phase 4: Match & Scoring *(Planned)*
 
 - [ ] **Bracket Generation**
@@ -1507,4 +1641,4 @@ export interface IResponseFormat {
 
 ---
 
-> **Note**: This document reflects the current state of the implemented backend as of February 2026. All implementations follow the layered architecture (Controller → Service → Repository → Model) and coding standards defined in the project rules.
+> **Note**: This document reflects the current state of the implemented backend as of March 2026. All implementations follow the layered architecture (Controller → Service → Repository → Model) and coding standards defined in the project rules.

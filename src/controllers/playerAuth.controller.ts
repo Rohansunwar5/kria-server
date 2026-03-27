@@ -89,8 +89,8 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     const { _id } = req.player;
-    const { firstName, lastName, phone, sport, location } = req.body;
-    const response = await playerAuthService.updateProfile(_id, { firstName, lastName, phone, sport, location });
+    const { firstName, lastName, phone, sport, location, gender, dateOfBirth } = req.body;
+    const response = await playerAuthService.updateProfile(_id, { firstName, lastName, phone, sport, location, gender, dateOfBirth });
     next(response);
 };
 

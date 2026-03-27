@@ -41,6 +41,15 @@ export const createCategoryValidator = [
     body('hybridConfig.topN')
         .optional()
         .isInt({ min: 1 }).withMessage('Top N must be at least 1.'),
+    body('isPaidRegistration')
+        .optional()
+        .isBoolean().withMessage('isPaidRegistration must be a boolean.'),
+    body('registrationFee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Registration fee must be a non-negative number.'),
+    body('maxRegistrations')
+        .optional()
+        .isInt({ min: 1 }).withMessage('Max registrations must be at least 1.'),
 ];
 
 export const updateCategoryValidator = [
@@ -80,6 +89,15 @@ export const updateCategoryValidator = [
     body('hybridConfig.topN')
         .optional()
         .isInt({ min: 1 }).withMessage('Top N must be at least 1.'),
+    body('isPaidRegistration')
+        .optional()
+        .isBoolean().withMessage('isPaidRegistration must be a boolean.'),
+    body('registrationFee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Registration fee must be a non-negative number.'),
+    body('maxRegistrations')
+        .optional()
+        .isInt({ min: 1 }).withMessage('Max registrations must be at least 1.'),
 ];
 
 export const getCategoryValidator = [

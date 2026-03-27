@@ -62,6 +62,13 @@ const playerSchema = new mongoose.Schema(
             enum: IAuthProvider,
             default: IAuthProvider.EMAIL,
         },
+        gender: {
+            type: String,
+            enum: ['male', 'female'],
+        },
+        dateOfBirth: {
+            type: Date,
+        },
         sport: {
             type: String,
             trim: true,
@@ -86,6 +93,9 @@ const playerSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        titles: [{
+            type: String,
+        }],
     },
     { timestamps: true }
 );
@@ -111,6 +121,8 @@ export interface IPlayer extends mongoose.Document {
     password?: string;
     status: string;
     authProvider: string;
+    gender?: string;
+    dateOfBirth?: Date;
     sport?: string;
     location?: string;
     profileImage?: string;
@@ -120,6 +132,7 @@ export interface IPlayer extends mongoose.Document {
         expiresAt: Date;
     };
     isActive: boolean;
+    titles?: string[];
     createdAt: Date;
     updatedAt: Date;
 }

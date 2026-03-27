@@ -39,11 +39,11 @@ class PlayerRepository {
     // UPDATE
     // ========================================================================
 
-    async updateById(id: string, data: Partial<{ firstName: string; lastName: string; phone: string }>) {
+    async updateById(id: string, data: Partial<{ firstName: string; lastName: string; phone: string; gender: string; dateOfBirth: string; sport: string; location: string }>) {
         return this._model.findByIdAndUpdate(id, data, { new: true }).select('-password -otp').lean();
     }
 
-    async updateByEmail(email: string, data: Partial<{ firstName: string; lastName: string; phone: string }>) {
+    async updateByEmail(email: string, data: Partial<{ firstName: string; lastName: string; phone: string; gender: string; dateOfBirth: string; sport: string; location: string }>) {
         return this._model.findOneAndUpdate({ email }, data, { new: true }).select('-password -otp').lean();
     }
 
@@ -91,6 +91,14 @@ class PlayerRepository {
         return this._model.findByIdAndUpdate(
             id,
             { profileImage: imagePath },
+            { new: true }
+        ).select('-password -otp').lean();
+    }
+
+    async addTitle(id: string, title: string) {
+        return this._model.findByIdAndUpdate(
+            id,
+            { $addToSet: { titles: title } },
             { new: true }
         ).select('-password -otp').lean();
     }
